@@ -1,0 +1,24 @@
+PixelPort built-in patch catalog
+Retrieved 2026-10-27. These are unmodified patch files, not original game ROMs.
+Patches are the work of their credited creators. PixelPort frontend licensing does not relicense third-party patches.
+Browser gameplay and online gameplay with these mods have not been verified.
+
+sm64-splitscreen.bps
+Kaze Emanuar — SM64 Multiplayer Splitscreen, Final
+Project: https://github.com/KazeEmanuar/splitscreen-multiplayer
+Downloaded from: https://www.sm64romhacks.com/hacks/download/1541ca26-3c8b-47e9-8591-ede2bf929ebe
+SHA-256: 18b4d5a33e69991137ee6075a5744a44c479da09e5db039b6995754c466e9904
+
+oot-splitscreen-v0.8.bps
+Takoshero — Ocarina of Time Splitscreen v0.8
+Project: https://github.com/takoshero96/Ocarina-of-Time-Splitscreen/releases/tag/update
+Downloaded from: https://github.com/takoshero96/Ocarina-of-Time-Splitscreen/releases/download/update/OoT-Splitscreen-v0.8.bps
+SHA-256: cf744941bcba7e6f9e946dea8ace46ae0ae8f6587be897aff58245b3793da0d3
+
+smb3-simultaneous-v2.ips
+ErikHK — SMB3 simultaneous 2-player v2
+Project: https://github.com/ErikHK/smb32p
+Downloaded from: https://raw.githubusercontent.com/ErikHK/smb32p/4e05a875b7b3232effca9a858938d9c7ac080d2b/smb3_2p_v2.ips
+SHA-256: a17640a5452643b2f3824eb3ec7166990d0caf135af5d797878403e2d980cd9a
+
+Base-game requirements are in ../mod-catalog.js and are shown in the mod picker. BPS source CRCs are read from the actual patch headers. SMB3 uses the USA PRG1 disassembly (https://github.com/captainsouthbird/smb3); recognized iNES file checksums are recorded in the catalog. Custom patch mode remains available.

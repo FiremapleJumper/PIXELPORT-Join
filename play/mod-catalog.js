@@ -1,0 +1,12 @@
+export const MOD_GAMES=[
+ {id:'sm64',name:'Super Mario 64',system:'n64'},
+ {id:'oot',name:'The Legend of Zelda: Ocarina of Time',system:'n64'},
+ {id:'smb3',name:'Super Mario Bros. 3',system:'nes'},
+ {id:'other',name:'Another game / custom patch',system:null}
+];
+export const BUILTIN_MODS=[
+ {id:'sm64-splitscreen',game:'sm64',title:'Split-screen multiplayer — Kaze (Final)',author:'Kaze Emanuar',file:'mods/sm64-splitscreen.bps',patchMD5:'3d47c6f62ba557d9a1373a6f057df7fc',sourceSize:8388608,sourceCRC32:['3ce60709'],extension:'.z64',base:'USA, original 8 MB .z64 ROM (CRC32 3CE60709).',notes:'Two players with separate views. Uses controller 2 and needs the N64 Expansion Pak (8 MB RAM). Browser gameplay is experimental and has not been verified.',source:'https://github.com/KazeEmanuar/splitscreen-multiplayer',downloadSource:'https://www.sm64romhacks.com/hacks/Super-Mario-64-Multiplayer-Splitscreen'},
+ {id:'oot-splitscreen',game:'oot',title:'2-player split-screen — Takoshero v0.8',author:'Takoshero',file:'mods/oot-splitscreen-v0.8.bps',patchMD5:'a363063d995841697582ec7b4f1c93be',sourceSize:33554432,sourceCRC32:['32120c23'],extension:'.z64',base:'USA v1.2 / Rev 2, 32 MB .z64 ROM (CRC32 32120C23).',notes:'Controller 2 must be connected before loading a save or area. Requires Expansion Pak / 8 MB RAM. Split-screen is heavier than the original game; browser gameplay is unverified. This is a ROM mod, separate from Zelda64 Online.',source:'https://github.com/takoshero96/Ocarina-of-Time-Splitscreen/releases/tag/update',downloadSource:'https://github.com/takoshero96/Ocarina-of-Time-Splitscreen/releases/download/update/OoT-Splitscreen-v0.8.bps'},
+ {id:'smb3-simultaneous',game:'smb3',title:'Simultaneous 2-player — ErikHK v2',author:'ErikHK',file:'mods/smb3-simultaneous-v2.ips',patchMD5:'84855d377f86ab5d4bfa9202f3f0ecb3',sourceSize:393232,sourceCRC32:['e8c3af69','0b742b33'],extension:'.nes',base:'USA PRG1 / Rev 1, extracted .nes with its 16-byte iNES header (CRC32 E8C3AF69 or 0B742B33).',notes:'An experimental simultaneous-play hack using controller 2. Player 2 is a companion character; this is not a second Mario in every level. Patch/gameplay compatibility is unverified.',source:'https://github.com/ErikHK/smb32p',downloadSource:'https://raw.githubusercontent.com/ErikHK/smb32p/4e05a875b7b3232effca9a858938d9c7ac080d2b/smb3_2p_v2.ips'}
+];
+export const modsForGame=id=>BUILTIN_MODS.filter(mod=>mod.game===id);

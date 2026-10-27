@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#344bec"><meta name="description" content="Your Nintendo generations, one browser. Load your own games in PixelPort, a browser arcade from NES to experimental GameCube and Wii.">
+  <title>PixelPort — Your browser arcade</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
+  <script src="isolation.js" defer></script><script src="app.js" type="module"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="./" aria-label="PixelPort home"><span class="brand-icon" data-icon="gamepad"></span><span>pixelport<span class="brand-dot">.</span></span></a>
+    <div class="sidebar-sub">MANY CONSOLES. ONE HAPPY PLACE.</div>
+    <nav aria-label="Main navigation"><button class="nav-home active" id="homeButton"><span data-icon="grid"></span>Play room<span class="new-dot"></span></button></nav>
+    <div class="nav-label">YOUR CONSOLES <span>11</span></div>
+    <nav class="systems-nav" id="systemsNav" aria-label="Consoles"></nav>
+    <div class="sidebar-bottom"><button id="helpButton"><span data-icon="help"></span>How to play <span class="arrow">↗</span></button><button id="aboutButton"><span data-icon="heart"></span>Made for the classics</button><div class="local-note"><span></span> Your files stay on your device</div></div>
+  </aside>
+  <main>
+    <header class="topbar"><div class="breadcrumb"><span data-icon="grid"></span> Play room <span class="slash">/</span> <span id="breadcrumbSystem">All consoles</span></div><div class="header-right"><span id="gamepadStatus" class="gamepad-status"><span data-icon="gamepad"></span><span id="gamepadLabel">Keyboard ready</span></span><button class="icon-button" id="settingsButton" title="Preferences" aria-label="Preferences"><span data-icon="settings"></span></button></div></header>
+    <div class="content">
+      <section class="intro"><div><div class="eyebrow"><span></span> LITTLE FILES. BIG ADVENTURES.</div><h1>Press play on<br>the good old days<span>.</span></h1><p>From your first cartridge to your favorite disc.<br class="desktop-break"> Your Nintendo generations, right here in your browser.</p></div><div class="intro-sticker" aria-hidden="true"><div class="sticker-star">✦</div><div class="sticker-controller" data-icon="gamepad"></div><span>NO INSTALL.<br>JUST PLAY.</span></div></section>
+      <section class="play-section" aria-labelledby="playerTitle">
+        <div class="section-heading"><h2 id="playerTitle">Let's play</h2><span class="subtle">A little nostalgia goes a long way</span></div>
+        <div class="player-card" id="playerCard">
+          <div class="player-toolbar"><div class="system-now"><span id="selectedDot" class="console-dot"></span><strong id="selectedName">Nintendo Entertainment System</strong><span class="mini-badge" id="selectedBadge">NES</span></div><div class="toolbar-actions"><button id="changeFileButton" class="text-button" hidden><span data-icon="folder"></span>Change game</button><button id="fullscreenButton" class="icon-button" title="Fullscreen" aria-label="Fullscreen"><span data-icon="expand"></span></button></div></div>
+          <div class="screen" id="screen">
+            <div class="screen-grid" aria-hidden="true"></div><div class="screen-status"><span class="standby-dot"></span><span id="screenStatus">READY WHEN YOU ARE</span><span class="screen-corner">PLAYER 01</span></div>
+            <div class="empty-state" id="emptyState"><div class="cartridge-art" id="emptyArt" aria-hidden="true"></div><h3 id="emptyTitle">Your next adventure is one file away.</h3><p id="emptyDescription">Drop a game here or open one from your device.</p><button id="openGameButton" class="primary-button"><span data-icon="folder"></span>Open game<span class="button-key">↵</span></button><button class="demo-button" id="demoButton">or try the NES controller demo ↗</button><span class="format-label" id="formatLabel">.nes · .zip · .7z</span></div>
+            <div class="runner-wrap" id="runnerWrap" hidden></div>
+            <div class="drop-overlay" id="dropOverlay" hidden><span data-icon="download"></span><strong>Drop it like it's 1985.</strong><span>Release to open your game</span></div>
+            <div class="screen-bottom" id="screenBottom"><span>✦ INSERT A LITTLE JOY</span><span>EST. 1983 →</span></div>
+          </div>
+          <div class="player-footer"><span class="footer-hint"><span data-icon="lock"></span><span>Game files stay local. Nothing gets uploaded.</span></span><button id="patcherButton" class="text-button">Mod ZIPs ↗</button><button id="multiplayerButton" class="text-button"><span data-icon="gamepad"></span>Online rooms <span>↗</span></button><button id="controlsButton" class="text-button"><span data-icon="keyboard"></span>Controls & saves <span>↗</span></button></div>
+        </div>
+        <div class="system-note" id="systemNote" hidden></div><div id="feedback" class="feedback" role="status" hidden></div>
+      </section>
+      <section id="patcherSection" class="multiplayer-panel" hidden></section>
+      <section id="multiplayerSection" class="multiplayer-panel" hidden></section>
+      <section class="console-section" aria-labelledby="consolesTitle"><div class="section-heading"><div class="heading-inline"><h2 id="consolesTitle">Pick your era</h2><span class="count-pill">11 consoles</span></div><div class="filter-tabs" role="group" aria-label="Filter console types"><button class="active" data-filter="all" aria-pressed="true">All</button><button data-filter="home" aria-pressed="false">Home</button><button data-filter="handheld" aria-pressed="false">Handheld</button></div></div><div class="console-grid" id="consoleGrid"></div></section>
+      <section class="recent-section" id="recentSection" hidden><div class="section-heading"><h2>Recently opened</h2><button class="text-button" id="clearRecent">Clear history</button></div><div class="recent-list" id="recentList"></div><p class="tiny-text">Only filenames are remembered. Open the original file again to play.</p></section>
+      <footer class="page-footer"><span><b class="pixel-spark">✦</b> A whole lot of memories. Zero shelf space.</span><button class="text-button" id="compatibilityButton">Console compatibility <span>↗</span></button></footer>
+    </div>
+  </main>
+  <input id="gameInput" type="file" accept=".3ds,.cci,.cxi,.3dsx,.app,.axf,.cia,.nes,.fds,.sfc,.smc,.gb,.gbc,.gba,.z64,.n64,.v64,.nds,.vb,.vboy,.iso,.gcm,.rvz,.ciso,.wbfs,.dol,.elf,.zip,.7z" hidden>
+  <input id="biosInput" type="file" accept=".bin,.rom,.bios,.zip" hidden>
+  <dialog id="infoDialog"><div class="dialog-header"><h2 id="dialogTitle"></h2><button class="icon-button" id="closeDialog" aria-label="Close dialog"><span data-icon="close"></span></button></div><div id="dialogBody"></div></dialog>
+</body>
+</html>
