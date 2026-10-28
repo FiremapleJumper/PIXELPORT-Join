@@ -3,8 +3,9 @@ on:
   push:
     branches: [main]
     paths:
-      - pixelport-github-import.zip
+      - pixelport-wii-update.zip
       - play/**
+      - native/**
       - index.html
       - .github/workflows/deploy-pixelport.yml
   workflow_dispatch:
@@ -24,51 +25,60 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Import the complete arcade
+      - name: Import verified Wii controller update
         shell: python
         run: |
           import hashlib, pathlib, zipfile
-          root = pathlib.Path(".")
-          package = root / "pixelport-github-import.zip"
+          root = pathlib.Path('.')
+          package = root / 'pixelport-wii-update.zip'
           if package.exists():
-              expected = "5397fbf1d27fd6565e0f66bc0526ebf431b50ebadde4fea9c36a479f05eaa48b"
+              expected = '9d922ec42ef05153d080fed9467c220144eb09557d63748b57c113983a838d4e'
               if hashlib.sha256(package.read_bytes()).hexdigest() != expected:
-                  raise RuntimeError("Site package checksum mismatch")
+                  raise RuntimeError('Update package checksum mismatch')
               with zipfile.ZipFile(package) as archive:
                   for entry in archive.infolist():
                       path = pathlib.PurePosixPath(entry.filename)
-                      if path.is_absolute() or ".." in path.parts or not (entry.filename.startswith("play/") or entry.filename == ".nojekyll"):
-                          raise RuntimeError("Unexpected archive path")
+                      if path.is_absolute() or '..' in path.parts or not entry.filename.startswith(('play/', 'native/wii/')):
+                          raise RuntimeError('Unexpected archive path')
                   archive.extractall(root)
               package.unlink()
-          if not (root / "play/index.html").is_file():
-              raise RuntimeError("Upload pixelport-github-import.zip before publishing")
-          page = root / "index.html"
-          text = page.read_text()
-          link = '<p><a href="play/">Open the full PixelPort arcade &#8594;</a></p>'
-          if link not in text:
-              page.write_text(text.replace("</main>", link + "</main>", 1))
-      - name: Save editable site files in the repository
+          if not (root / 'play/index.html').is_file():
+              raise RuntimeError('PixelPort site files are missing')
+      - name: Check controller input and rebuilt WASM
+        run: |
+          node --test native/wii/controller.test.mjs
+          g++ -std=c++20 native/wii/test-input.cpp -o /tmp/pixelport-wii-input-test
+          /tmp/pixelport-wii-input-test
+          node native/wii/wasm-smoke.mjs play/dolphin/cores/dolphin/wii/dolphin-core-upstream.js
+          python - <<'PY'
+          import hashlib, pathlib, re
+          root = pathlib.Path('play/dolphin')
+          manifest = (root / 'src/pixelport-wii-core.js').read_text()
+          expected = re.search(r"WII_CORE_SHA256='([a-f0-9]{64})'", manifest).group(1)
+          actual = hashlib.sha256((root / 'cores/dolphin/wii/dolphin-core-upstream.wasm').read_bytes()).hexdigest()
+          assert expected == actual, 'Wii WASM checksum mismatch'
+          PY
+      - name: Save editable site and native source
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add play .nojekyll index.html
-          if git ls-files --error-unmatch pixelport-github-import.zip >/dev/null 2>&1; then
-            git add -u pixelport-github-import.zip
+          git add play native .nojekyll index.html
+          if git ls-files --error-unmatch pixelport-wii-update.zip >/dev/null 2>&1; then
+            git add -u pixelport-wii-update.zip
           fi
           if ! git diff --cached --quiet; then
-            git commit -m "Publish the full PixelPort arcade under /play/"
+            git commit -m "Add experimental Wii Remote input and 8BitDo remapping"
             git push
           fi
       - name: Prepare site
         shell: python
         run: |
           import pathlib, shutil
-          out = pathlib.Path("_site")
+          out = pathlib.Path('_site')
           out.mkdir(exist_ok=True)
-          shutil.copy2("index.html", out / "index.html")
-          shutil.copytree("play", out / "play")
-          (out / ".nojekyll").touch()
+          shutil.copy2('index.html', out / 'index.html')
+          shutil.copytree('play', out / 'play')
+          (out / '.nojekyll').touch()
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
