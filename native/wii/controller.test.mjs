@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {defaultWiiPadMapping,normalizeWiiPadMapping,readWiiGamepadInput,WII_KEYS} from '../../play/dolphin/src/pixelport-wii-controls.js';
+import {defaultWiiPadMapping,normalizeWiiPadMapping,readWiiGamepadInput,WII_KEYS,beginWiiCapture,sampleWiiCapture} from '../../play/dolphin/src/pixelport-wii-controls.js';
 import {inputStateFromPressed,resolveKeyboardButton} from '../../play/dolphin/src/input.js';
 import {readWiiRendererPreference,rememberWiiRenderer} from '../../play/dolphin/src/pixelport-wii-renderer.js';
 import {readSettingsFromSearch,buildSettingsHref} from '../../play/dolphin/src/settings.js';
@@ -48,4 +48,43 @@ test('unsupported Wii WebGPU links select OpenGL; GameCube renderer choices are 
  assert.equal(readSettingsFromSearch('?video=wgpu').video,'wgpu');
  const settings=readSettingsFromSearch('?video=wgpu');
  assert.equal(new URL(buildSettingsHref('https://example.test/?controls=wii',settings)).searchParams.get('video'),'ogl');
+});
+
+test('press-to-map waits for release and learns the raw chosen button',()=>{
+ const controller={...pad(),id:'test pad',index:0};controller.buttons[2]={pressed:true,value:1};
+ const capture=beginWiiCapture('button',controller,0);
+ assert.equal(sampleWiiCapture(capture,controller,1).status,'release');
+ controller.buttons=pad().buttons;
+ assert.equal(sampleWiiCapture(capture,controller,2).status,'listening');
+ controller.buttons[7]={pressed:true,value:1};
+ const result=sampleWiiCapture(capture,controller,3);
+ assert.equal(result.status,'captured');assert.equal(result.button,7);
+ const mapping=defaultWiiPadMapping();mapping.buttons.two=result.button;
+ assert.equal(readWiiGamepadInput(controller,mapping).state.mask&1,1);
+});
+test('connecting a controller does not assign the wake-up button',()=>{
+ const capture=beginWiiCapture('button',null,0);
+ assert.equal(sampleWiiCapture(capture,null,1).status,'connect');
+ const controller={...pad(),id:'new pad',index:0};controller.buttons[0]={pressed:true,value:1};
+ assert.equal(sampleWiiCapture(capture,controller,2).status,'release');
+ controller.buttons[0]={pressed:false,value:0};
+ assert.equal(sampleWiiCapture(capture,controller,3).status,'listening');
+ controller.buttons[3]={pressed:true,value:1};
+ assert.equal(sampleWiiCapture(capture,controller,4).button,3);
+});
+test('a timeout or controller change cannot produce an assignment',()=>{
+ const controller={...pad(),id:'test pad',index:0};
+ assert.equal(sampleWiiCapture(beginWiiCapture('button',controller,0),controller,15000).status,'timeout');
+ assert.equal(sampleWiiCapture(beginWiiCapture('button',controller,0),null,1).status,'disconnected');
+ assert.equal(sampleWiiCapture(beginWiiCapture('button',controller,0),{...controller,index:1},1).status,'disconnected');
+});
+test('stick learning ignores drift and held axes, and can preserve reversed movement',()=>{
+ const controller={...pad(),id:'test pad',index:0,axes:[1,0,-1,0]};
+ const capture=beginWiiCapture('axis',controller,0);
+ assert.equal(sampleWiiCapture(capture,controller,1).status,'listening');
+ controller.axes[0]=0.1;assert.equal(sampleWiiCapture(capture,controller,2).status,'listening');
+ controller.axes[0]=-0.9;const result=sampleWiiCapture(capture,controller,3);
+ assert.equal(result.status,'captured');assert.equal(result.axis,0);
+ const mapping=defaultWiiPadMapping();mapping.moveX=result.axis;mapping.invertMoveX=result.value<0;
+ assert.ok(readWiiGamepadInput(controller,mapping).state.stickX>176);
 });
