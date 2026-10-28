@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
     paths:
-      - pixelport-wii-update.zip
+      - pixelport-renderer-update.zip
       - play/**
       - native/**
       - index.html
@@ -25,14 +25,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Import verified Wii controller update
+      - name: Import verified renderer update
         shell: python
         run: |
           import hashlib, pathlib, zipfile
           root = pathlib.Path('.')
-          package = root / 'pixelport-wii-update.zip'
+          package = root / 'pixelport-renderer-update.zip'
           if package.exists():
-              expected = '9d922ec42ef05153d080fed9467c220144eb09557d63748b57c113983a838d4e'
+              expected = '55b3a001dd8f18a746eb69087df254f0cb5390aed7a891527c52edd16b19f709'
               if hashlib.sha256(package.read_bytes()).hexdigest() != expected:
                   raise RuntimeError('Update package checksum mismatch')
               with zipfile.ZipFile(package) as archive:
@@ -50,6 +50,7 @@ jobs:
           g++ -std=c++20 native/wii/test-input.cpp -o /tmp/pixelport-wii-input-test
           /tmp/pixelport-wii-input-test
           node native/wii/wasm-smoke.mjs play/dolphin/cores/dolphin/wii/dolphin-core-upstream.js
+          node native/wii/wasm-smoke.mjs play/dolphin/cores/dolphin/wii/dolphin-core-upstream.js OGL
           python - <<'PY'
           import hashlib, pathlib, re
           root = pathlib.Path('play/dolphin')
@@ -63,11 +64,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add play native .nojekyll index.html
-          if git ls-files --error-unmatch pixelport-wii-update.zip >/dev/null 2>&1; then
-            git add -u pixelport-wii-update.zip
+          if git ls-files --error-unmatch pixelport-renderer-update.zip >/dev/null 2>&1; then
+            git add -u pixelport-renderer-update.zip
           fi
           if ! git diff --cached --quiet; then
-            git commit -m "Add experimental Wii Remote input and 8BitDo remapping"
+            git commit -m "Restore Wii OpenGL renderer selection and remember preferences"
             git push
           fi
       - name: Prepare site
