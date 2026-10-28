@@ -2,6 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {defaultWiiPadMapping,normalizeWiiPadMapping,readWiiGamepadInput,WII_KEYS} from '../../play/dolphin/src/pixelport-wii-controls.js';
 import {inputStateFromPressed,resolveKeyboardButton} from '../../play/dolphin/src/input.js';
+import {readWiiRendererPreference,rememberWiiRenderer} from '../../play/dolphin/src/pixelport-wii-renderer.js';
+import {readSettingsFromSearch,buildSettingsHref} from '../../play/dolphin/src/settings.js';
 const pad=()=>({buttons:Array.from({length:20},()=>({pressed:false,value:0})),axes:[0,0,0,0]});
 test('8BitDo-style standard face buttons and shoulder produce jump, run and shake',()=>{
  const controller=pad();for(const button of [0,2,4])controller.buttons[button]={pressed:true,value:1};
@@ -28,4 +30,22 @@ test('keyboard Wii mappings cover 1 + 2, pause, shake, tilt and Home',()=>{
 test('invalid saved mapping fields cannot produce invalid controller slots',()=>{
  const safe=normalizeWiiPadMapping({buttons:{two:10000,one:-9},tiltX:100,moveX:-1,invertTilt:'yes'});
  assert.equal(safe.buttons.two,0);assert.equal(safe.buttons.one,2);assert.equal(safe.tiltX,2);assert.equal(safe.moveX,-1);assert.equal(safe.invertTilt,false);
+});
+test('Wii renderer changes survive apply/restart and future game launches',()=>{
+ const values=new Map(),storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};
+ assert.equal(readWiiRendererPreference(storage),'software');
+ const settings=readSettingsFromSearch('?controls=wii&core=upstream&video=ogl');
+ const applied=new URL(buildSettingsHref('https://example.test/play/dolphin/?controls=wii',settings));
+ assert.equal(applied.searchParams.get('video'),'ogl');
+ assert.equal(applied.searchParams.get('controls'),'wii');
+ rememberWiiRenderer(settings.video,storage);
+ assert.equal(readWiiRendererPreference(storage),'ogl');
+ rememberWiiRenderer('software',storage);
+ assert.equal(readWiiRendererPreference(storage),'software');
+});
+test('unsupported Wii WebGPU links select OpenGL; GameCube renderer choices are preserved',()=>{
+ assert.equal(readSettingsFromSearch('?controls=wii&video=wgpu').video,'ogl');
+ assert.equal(readSettingsFromSearch('?video=wgpu').video,'wgpu');
+ const settings=readSettingsFromSearch('?video=wgpu');
+ assert.equal(new URL(buildSettingsHref('https://example.test/?controls=wii',settings)).searchParams.get('video'),'ogl');
 });

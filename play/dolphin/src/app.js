@@ -1,4 +1,5 @@
 import {WII_PROFILE,WII_KEYS,createWiiControls} from './pixelport-wii-controls.js';
+import {rememberWiiRenderer} from './pixelport-wii-renderer.js';
 const wiiControls=createWiiControls();
 import { lookupGameProfile, readGameId } from "./game-profiles.js";
 import { AudioController } from "./audio.js";
@@ -459,11 +460,14 @@ function wireSettings() {
 
   elements.settingsForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    const nextHref = buildSettingsHref(window.location.href, collectSettingsForm());
+    const settings = collectSettingsForm();
+    if (WII_PROFILE) rememberWiiRenderer(settings.video);
+    const nextHref = buildSettingsHref(window.location.href, settings);
     window.location.assign(nextHref);
   });
 
   elements.settingsPresetButton.addEventListener("click", () => {
+    if (WII_PROFILE) rememberWiiRenderer('software');
     window.location.assign(buildPlayablePresetHref(window.location.href));
   });
 }

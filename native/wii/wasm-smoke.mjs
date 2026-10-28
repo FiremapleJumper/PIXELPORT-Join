@@ -8,7 +8,8 @@ try{
  const factory=(await import(pathToFileURL(filename))).default;
  const module=await factory({wasmBinary:new Uint8Array(await readFile(filename.replace(/\.js$/,'.wasm'))),print:()=>{},printErr:message=>console.error(message)});
  assert.equal(module._PixelPortWiiInputVersion(),1);
- assert.equal(module.ccall('SetVideoBackend','number',['string'],['Software Renderer']),1);
+ const backend=process.argv[3] || 'Software Renderer';
+ assert.equal(module.ccall('SetVideoBackend','number',['string'],[backend]),1);
  assert.equal(module._CoreInit(),1);
  let generation=1;
  const input=mask=>module._SetInputState(mask,128,128,128,128,0,0,0,0,generation++);
@@ -20,6 +21,6 @@ try{
  input(1<<8);assert.equal(module._PixelPortWiimoteButtons(),0x02);
  input(1<<11);assert.equal(module._PixelPortWiimoteButtons(),0x04);
  input(0);assert.equal(module._PixelPortWiimoteButtons(),0);
- console.log('PASS: rebuilt WASM initializes an emulated sideways Wii Remote; 1+2, pause, minus, rotated D-pad and release reach Dolphin.');
+ console.log('PASS ('+backend+'): rebuilt WASM initializes an emulated sideways Wii Remote; 1+2, pause, minus, rotated D-pad and release reach Dolphin.');
  process.exit(0);
 }catch(error){console.error(error);process.exit(1)}

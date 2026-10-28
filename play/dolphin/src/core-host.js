@@ -2,6 +2,7 @@ import { DolphinCoreAdapter, dolphinBundleAvailable } from "./dolphin-adapter.js
 import { buttonMaskFromPressed } from "./input.js";
 import { UpstreamMainThreadAdapter } from "./upstream-main-thread-adapter.js";
 import { UpstreamWorkerAdapter, upstreamBundleAvailable } from "./upstream-worker-adapter.js";
+import {normalizeWiiRenderer} from './pixelport-wii-renderer.js';
 import {
   DEFAULT_UPSTREAM_CORE_URL,
   requestedLegacyOneWayAck,
@@ -80,7 +81,7 @@ export class EmulatorHost {
       onStatus(`Invalid candidate core selector; using pinned baseline: ${error.message}`);
       this.upstreamCoreBuild = requestedUpstreamCoreBuild("");
     }
-    this.videoBackend = new URLSearchParams(window.location.search).get('controls')==='wii'?'Software Renderer':requestedVideoBackend();
+    this.videoBackend = requestedVideoBackend();
     this.cpuThread = requestedCpuThread(this.videoBackend);
     this.cpuCore = requestedCpuCore();
     this.ppcWasmJit = requestedPpcWasmJit(this.videoBackend);
@@ -1124,7 +1125,9 @@ function requestedCoreKind() {
 }
 
 function requestedVideoBackend() {
-  const requested = new URLSearchParams(window.location.search).get("video");
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get("video") || "software";
+  const requested = params.get('controls') === 'wii' ? normalizeWiiRenderer(value) : value;
   if (requested === "ogl") {
     return "OGL";
   }

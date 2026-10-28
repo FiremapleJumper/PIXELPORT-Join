@@ -64,6 +64,13 @@ export function createWiiControls(){
  render();
  const picker=document.querySelector('#romInput');if(picker){picker.setAttribute('aria-label','Open a Wii disc image');picker.closest('[data-tip]')?.setAttribute('data-tip','Open a Wii disc image')}
  const screen=document.querySelector('#screen');screen.tabIndex=0;screen.addEventListener('pointerdown',()=>screen.focus());
- for(const id of ['settingVideo','settingAutoProfile']){const input=document.getElementById(id);if(input){input.disabled=true;if(input.type==='checkbox')input.checked=false}}
+ const renderer=document.getElementById('settingVideo');
+ if(renderer){
+  renderer.disabled=false;
+  const webgpu=renderer.querySelector('option[value="wgpu"]');
+  if(webgpu){webgpu.disabled=true;webgpu.textContent='WebGPU hardware (unavailable for Wii)'}
+  const note=document.createElement('small');note.id='wiiRendererHelp';note.textContent='OpenGL GPU uses hardware rendering. Software is also available; hardware WebGPU is unavailable in this Wii core.';renderer.after(note);renderer.setAttribute('aria-describedby',note.id);
+ }
+ const autoProfile=document.getElementById('settingAutoProfile');if(autoProfile){autoProfile.disabled=true;autoProfile.checked=false}
  return {read(pad){usePad(pad);return readWiiGamepadInput(pad,mapping)},panel};
 }

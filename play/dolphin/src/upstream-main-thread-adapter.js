@@ -89,6 +89,7 @@ export class UpstreamMainThreadAdapter {
     try {
       verified = await verifyUpstreamCoreWasm(this.coreUrl, this.expectedCoreSha256, window.location.href);
     } catch (error) {
+      if (this.coreUrl.includes('/wii/')) throw new Error('The Wii input core could not be verified: ' + error.message);
       if (this.coreUrl === DEFAULT_UPSTREAM_CORE_URL) throw error;
       this.onStatus(`Candidate core rejected; rolling back to pinned baseline: ${error.message}`);
       this.coreUrl = DEFAULT_UPSTREAM_CORE_URL;
@@ -117,6 +118,9 @@ export class UpstreamMainThreadAdapter {
       onAbort: (reason) => this.onStatus(`Emscripten abort: ${reason}`)
     });
 
+    if (this.coreUrl.includes('/wii/') && this.module._PixelPortWiiInputVersion?.() !== 1) {
+      throw new Error('The selected core does not provide Wii Remote input.');
+    }
     this.api = this.bindApi(this.module);
     this.api.setVideoBackend?.(this.videoBackend);
     this.api.setCpuThread?.(Boolean(this.cpuThread));

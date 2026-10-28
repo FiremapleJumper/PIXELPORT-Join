@@ -1,3 +1,5 @@
+import {normalizeWiiRenderer} from './pixelport-wii-renderer.js';
+
 export const PLAYABLE_PRESET = Object.freeze({
   core: "upstream",
   video: "software",
@@ -58,7 +60,9 @@ export function readSettingsFromSearch(search) {
 
   return {
     core: normalizeChoice("core", params.get("core") || DEFAULT_SETTINGS.core),
-    video: normalizeChoice("video", params.get("video") || "software"),
+    video: params.get('controls') === 'wii'
+      ? normalizeWiiRenderer(params.get('video') || 'software')
+      : normalizeChoice("video", params.get("video") || "software"),
     cpu: normalizeChoice("cpu", params.get("cpu") || DEFAULT_SETTINGS.cpu),
     speed: normalizeChoice("speed", normalizeSpeed(params.get("speed"))),
     present: normalizeChoice("present", normalizePresentationScale(params.get("present"))),
@@ -77,6 +81,7 @@ export function readSettingsFromSearch(search) {
 export function buildSettingsHref(href, settings) {
   const url = new URL(href);
   const nextSettings = normalizeSettings(settings);
+  if (url.searchParams.get('controls') === 'wii') nextSettings.video = normalizeWiiRenderer(nextSettings.video);
 
   // Renderer probes replace the selected visible executor with diagnostic
   // sinks. Applying settings must return to the visible renderer, including
