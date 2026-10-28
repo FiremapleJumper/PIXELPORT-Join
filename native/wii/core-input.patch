@@ -1,0 +1,77 @@
+diff --git a/core/upstream/dolphin_web_core.cpp b/core/upstream/dolphin_web_core.cpp
+index 9f07725..1ce4f5d 100644
+--- a/core/upstream/dolphin_web_core.cpp
++++ b/core/upstream/dolphin_web_core.cpp
+@@ -38,6 +38,11 @@
+ #include "Core/HW/EXI/EXI_Device.h"
+ #include "Core/HW/GCKeyboard.h"
+ #include "Core/HW/GCPad.h"
++#include "Core/HW/Wiimote.h"
++#include "Core/HW/WiimoteEmu/WiimoteEmu.h"
++#include "Core/Config/WiimoteSettings.h"
++#include "InputCommon/InputConfig.h"
++#include "pixelport_wiimote_input.h"
+ #include "Core/HW/SystemTimers.h"
+ #include "Core/Host.h"
+ #include "Core/PowerPC/PowerPC.h"
+@@ -531,6 +536,32 @@ void CreateDirectoryIfNeeded(const std::string& path)
+     File::CreateFullPath(path);
+ }
+ 
++void InitializePixelPortWiimote()
++{
++  Config::SetBase(Config::WIIMOTE_1_SOURCE, WiimoteSource::Emulated);
++  Common::IniFile profiles;
++  auto* profile = profiles.GetOrCreateSection("Wiimote1");
++  profile->Set("Source", 1);
++  profile->Set("Options/Sideways Wiimote", true);
++  profile->Set("Extension", "None");
++  profiles.Save(File::GetUserPath(D_CONFIG_IDX) + "WiimoteNew.ini");
++  Wiimote::Initialize(Wiimote::InitializeMode::DO_NOT_WAIT_FOR_WIIMOTES);
++  auto* remote = Wiimote::GetConfig()->GetController(0);
++  remote->LoadConfig(profile);
++  remote->SetInputOverrideFunction([](std::string_view group, std::string_view control,
++                                       ControlState) -> std::optional<ControlState> {
++    InputStateSnapshot input;
++    {
++      const std::lock_guard<std::mutex> lock(s_input_state_mutex);
++      input = s_input_state;
++    }
++    const double seconds = std::chrono::duration<double>(
++        std::chrono::steady_clock::now().time_since_epoch()).count();
++    return PixelPortWii::Override({input.mask, input.stick_x, input.stick_y,
++                                  input.c_stick_x}, group, control, seconds);
++  });
++}
++
+ void EnsureRuntime()
+ {
+   if (s_runtime_initialized)
+@@ -646,6 +677,7 @@ void EnsureRuntime()
+   Pad::Initialize();
+   Pad::InitializeGBA();
+   Keyboard::Initialize();
++  InitializePixelPortWiimote();
+ 
+   // §27 savestate-load backend resync. Probe evidence: after
+   // State::Load the WebGPU command-ring producer (the dual-core GPU
+@@ -816,6 +848,19 @@ std::unique_ptr<GBAHostInterface> Host_CreateGBAHost(std::weak_ptr<HW::GBA::Core
+ 
+ extern "C"
+ {
++int PixelPortWiiInputVersion()
++{
++  return 1;
++}
++
++EMSCRIPTEN_KEEPALIVE std::uint32_t PixelPortWiimoteButtons()
++{
++  if (!s_runtime_initialized)
++    return 0;
++  auto* remote = static_cast<WiimoteEmu::Wiimote*>(Wiimote::GetConfig()->GetController(0));
++  return remote->GetCurrentlyPressedButtons().hex;
++}
++
+ int CoreInit()
+ {
+   EnsureRuntime();

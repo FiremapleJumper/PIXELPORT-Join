@@ -1,3 +1,4 @@
+import {WII_CORE_URL,WII_CORE_SHA256} from './pixelport-wii-core.js';
 export const DEFAULT_UPSTREAM_CORE_URL = "./cores/dolphin/dolphin-core-upstream.js";
 export const DEFAULT_UPSTREAM_CORE_SHA256 = "d7395b3a94080f5b7d08a0522f59096007419d117b7b0eb868246429adee6f5c";
 export const DISCIO_UPSTREAM_CORE_URL = "./cores/dolphin/dolphin-upstream.js";
@@ -90,6 +91,7 @@ export function estimateWorkerMessageJsonBytes(message) {
 }
 
 export function requestedUpstreamCoreBuild(search = globalThis.location?.search ?? "") {
+  if(new URLSearchParams(search).get('controls')==='wii')return {coreId:'sha256:'+WII_CORE_SHA256,sha256:WII_CORE_SHA256,coreUrl:WII_CORE_URL,candidate:false,wiiInput:true};
   const requested = new URLSearchParams(search).get("coreid")?.toLowerCase().replace(/^sha256:/, "") ?? "";
   if (!requested) {
     return {

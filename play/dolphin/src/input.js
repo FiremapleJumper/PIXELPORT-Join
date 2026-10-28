@@ -1,4 +1,5 @@
 export const BUTTONS = Object.freeze({
+  HOME: 1 << 20,
   A: 1 << 0,
   B: 1 << 1,
   X: 1 << 2,

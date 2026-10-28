@@ -309,6 +309,7 @@ export class UpstreamWorkerAdapter {
         await verifyUpstreamCoreWasm(this.coreUrl, this.expectedCoreSha256, window.location.href);
         this.coreCandidatePreflighted = true;
       } catch (error) {
+        if(new URLSearchParams(window.location.search).get('controls')==='wii')throw new Error('The Wii input core could not be verified. Reload PixelPort and try again: '+error.message);
         this.onStatus(`Candidate core rejected; rolling back to pinned baseline: ${error.message}`);
         this.coreFallbackReason = error.message;
         this.fallbackBeforeCanvasTransfer = true;

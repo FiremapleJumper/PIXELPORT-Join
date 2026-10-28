@@ -1954,6 +1954,7 @@ async function loadCore({
     postStatus("WebGPU video backend: real C++ render path active (day-17, under construction)");
   }
 
+  if(coreUrl.includes('/cores/dolphin/wii/') && (typeof moduleInstance._PixelPortWiiInputVersion!=='function'||moduleInstance._PixelPortWiiInputVersion()!==1))throw new Error('The selected Wii core does not provide the required Wii Remote input bridge.');
   api = bindApi(moduleInstance);
   const ownershipTraceSetterAvailable = Boolean(
     api.setWebGpuOwnershipTraceEnabled &&

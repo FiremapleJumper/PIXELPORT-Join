@@ -1,3 +1,5 @@
+import {WII_PROFILE,WII_KEYS,createWiiControls} from './pixelport-wii-controls.js';
+const wiiControls=createWiiControls();
 import { lookupGameProfile, readGameId } from "./game-profiles.js";
 import { AudioController } from "./audio.js";
 import { EmulatorHost } from "./core-host.js";
@@ -843,7 +845,7 @@ function updateScreenHud(info) {
 // URL flag or in the settings panel. A measured default is a good guess, not a
 // reason to override someone who has already decided.
 async function applyGameProfile(file) {
-  if (!elements.autoProfile?.checked) return;
+  if (WII_PROFILE || !elements.autoProfile?.checked) return;
   if (new URLSearchParams(window.location.search).has("video")) return;
   let gameId = null;
   try {
@@ -939,12 +941,16 @@ function renderRootEntries(entries) {
 }
 
 function wireKeyboard() {
+  if (WII_PROFILE) window.addEventListener('blur',()=>{
+    keyboardPressed.clear();touchPressed.clear();gamepadPressed.clear();gamepadInputState=null;lastGamepadInput=null;syncInput('Keyboard');
+  });
   document.addEventListener("keydown", (event) => {
+    if (WII_PROFILE && (event.target?.matches?.("input,textarea,select,button") || event.target?.isContentEditable)) return;
     if (event.repeat) {
       return;
     }
 
-    const button = resolveKeyboardButton(event.code);
+    const button = resolveKeyboardButton(event.code,WII_PROFILE?WII_KEYS:undefined);
     if (!button) {
       return;
     }
@@ -957,7 +963,7 @@ function wireKeyboard() {
   });
 
   document.addEventListener("keyup", (event) => {
-    const button = resolveKeyboardButton(event.code);
+    const button = resolveKeyboardButton(event.code,WII_PROFILE?WII_KEYS:undefined);
     if (!button) {
       return;
     }
@@ -1081,7 +1087,7 @@ function wireGamepadPolling() {
       }
     }
 
-    const nextGamepadInput = firstPad ? readGamepadInput(firstPad) : null;
+    const nextGamepadInput = firstPad && (!WII_PROFILE || document.hasFocus()) ? (wiiControls ? wiiControls.read(firstPad) : readGamepadInput(firstPad)) : null;
     if (!legacyGamepadPoll && gamepadInputsEqual(lastGamepadInput, nextGamepadInput)) {
       return;
     }

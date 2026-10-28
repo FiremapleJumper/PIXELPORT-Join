@@ -80,7 +80,7 @@ export class EmulatorHost {
       onStatus(`Invalid candidate core selector; using pinned baseline: ${error.message}`);
       this.upstreamCoreBuild = requestedUpstreamCoreBuild("");
     }
-    this.videoBackend = requestedVideoBackend();
+    this.videoBackend = new URLSearchParams(window.location.search).get('controls')==='wii'?'Software Renderer':requestedVideoBackend();
     this.cpuThread = requestedCpuThread(this.videoBackend);
     this.cpuCore = requestedCpuCore();
     this.ppcWasmJit = requestedPpcWasmJit(this.videoBackend);
@@ -494,9 +494,10 @@ export class EmulatorHost {
     if (await this.adapterAvailable()) {
       this.onMode(`${this.adapterLabel} detected`);
     } else {
+      if(new URLSearchParams(window.location.search).get('controls')==='wii')throw new Error('The Wii input core is unavailable. Reload the published page and try again.');
       this.onMode("Demo fallback");
     }
-
+    if(new URLSearchParams(window.location.search).get('controls')==='wii')this.onStatus('Wii player ready · open a disc');
     this.start();
   }
 
