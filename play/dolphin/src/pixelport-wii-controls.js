@@ -69,7 +69,7 @@ export function createWiiControls(){
   renderer.disabled=false;
   const webgpu=renderer.querySelector('option[value="wgpu"]');
   if(webgpu){webgpu.disabled=true;webgpu.textContent='WebGPU hardware (unavailable for Wii)'}
-  const note=document.createElement('small');note.id='wiiRendererHelp';note.textContent='OpenGL GPU uses hardware rendering. Software is also available; hardware WebGPU is unavailable in this Wii core.';renderer.after(note);renderer.setAttribute('aria-describedby',note.id);
+  const note=document.createElement('small');note.id='wiiRendererHelp';note.textContent='OpenGL GPU uses hardware rendering. Software is also available; hardware WebGPU is unavailable in this Wii core.';note.className='muted compact';note.style.gridColumn='1 / -1';renderer.closest('label').after(note);renderer.setAttribute('aria-describedby',note.id);
  }
  const autoProfile=document.getElementById('settingAutoProfile');if(autoProfile){autoProfile.disabled=true;autoProfile.checked=false}
  return {read(pad){usePad(pad);return readWiiGamepadInput(pad,mapping)},panel};
